@@ -6,7 +6,9 @@
 
 **Architecture:** Maven multi-module reactor. The `engine` module is a pure Java library with **no Spring/web/DB dependency** (the build enforces the boundary); the `app` module is the Spring Boot application and depends on `engine`. The React app is served two ways: in dev by the Vite dev server (proxying `/api` to Spring on `:8080`), and in prod baked into the Spring Boot jar's static resources so there is a single deployable artifact. **No database yet** — Postgres + persistence arrive in Plan 2.
 
-**Tech Stack:** Java 21, Spring Boot 3.3.5, Maven (wrapper), JUnit 5 + AssertJ, React 18 + TypeScript + Vite, Vitest + Testing Library, Docker (multi-stage), GitHub Actions, Fly.io.
+**Tech Stack:** Java 21, Spring Boot 3.3.5, Maven (wrapper), JUnit 5 + AssertJ, React 19 + TypeScript + Vite 8, Vitest 3 + Testing Library, Docker (multi-stage), GitHub Actions, Fly.io.
+
+> **Post-execution note:** validated end-to-end on 2026-06-10. Corrections vs the original draft are folded in below: Vitest `^3` (not `^2`) for Vite 8, a `vite.config.ts` typed-variable pattern, and Node 22 in the Docker/CI images.
 
 ---
 
@@ -440,7 +442,7 @@ Run:
 ```bash
 cd /workspace && npm create vite@latest frontend -- --template react-ts
 cd /workspace/frontend && npm install
-npm install -D vitest@^2 jsdom @testing-library/react@^16 @testing-library/jest-dom@^6
+npm install -D vitest@^3 jsdom @testing-library/react@^16 @testing-library/jest-dom@^6
 ```
 Expected: `frontend/` created with a standard Vite React-TS project; deps installed; `frontend/package-lock.json` exists.
 
@@ -460,11 +462,14 @@ In `/workspace/frontend/package.json`, ensure the `scripts` block contains:
 
 Replace `/workspace/frontend/vite.config.ts` with:
 ```ts
-/// <reference types="vitest/config" />
-import { defineConfig } from 'vite'
+import { defineConfig, type UserConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 
-export default defineConfig({
+// The `test` field is read by Vitest at runtime. Vite's own UserConfig type does
+// not declare it, and Vite 8 / Vitest 3 ship mismatched internal Vite type copies,
+// so we attach it via a typed variable (excess-property checks don't apply to
+// variables) rather than importing `defineConfig` from `vitest/config`.
+const config: UserConfig & { test: unknown } = {
   plugins: [react()],
   server: {
     proxy: {
@@ -476,7 +481,9 @@ export default defineConfig({
     globals: true,
     setupFiles: './src/setupTests.ts',
   },
-})
+}
+
+export default defineConfig(config)
 ```
 
 Create `/workspace/frontend/src/setupTests.ts`:
@@ -598,7 +605,7 @@ git -C /workspace commit -m "feat(frontend): React/TS app showing backend health
 `/workspace/Dockerfile`:
 ```dockerfile
 # --- Stage 1: build the frontend ---
-FROM node:20-alpine AS frontend
+FROM node:22-alpine AS frontend
 WORKDIR /fe
 COPY frontend/package.json frontend/package-lock.json ./
 RUN npm ci
@@ -693,7 +700,7 @@ jobs:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
           cache: npm
           cache-dependency-path: frontend/package-lock.json
       - run: npm ci
