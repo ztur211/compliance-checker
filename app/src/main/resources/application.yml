@@ -1,0 +1,5 @@
+spring:
+  application:
+    name: compliance-checker
+server:
+  port: 8080
