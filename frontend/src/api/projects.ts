@@ -6,7 +6,8 @@ async function jsonFetch<T>(url: string, init?: RequestInit): Promise<T> {
     ...init,
   })
   if (!res.ok) throw new Error(`${res.status} ${res.statusText}: ${await res.text()}`)
-  return (await res.json()) as T
+  const text = await res.text()
+  return (text ? JSON.parse(text) : undefined) as T // void endpoints (e.g. approve/reject) return an empty body
 }
 
 export const api = { jsonFetch }

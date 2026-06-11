@@ -20,8 +20,8 @@ class GoldSetEvalTest {
     // Replace clause text + expected values with authoritative C/AS2 provisions during domain validation.
     private static final List<Gold> GOLD = List.of(
             new Gold("3.1 Open paths shall not exceed 18 m.", "OPEN_PATH_LENGTH", 18.0),
-            new Gold("Dead-end open paths shall not exceed 6 m.", "DEAD_END_LENGTH", 6.0)
-            // ... extend to ~10
+            new Gold("Every floor shall be served by at least 2 escape routes.", "EXIT_COUNT", 2.0)
+            // ... extend to ~10 (keep expected parameters within the engine's ParameterKey vocabulary)
     );
 
     @Test

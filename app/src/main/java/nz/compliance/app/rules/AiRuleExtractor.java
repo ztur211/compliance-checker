@@ -8,7 +8,7 @@ interface AiRuleExtractor {
     @SystemMessage("""
         You convert New Zealand building-code (NZBC C/AS2) means-of-escape provisions into
         structured compliance rules. Use ONLY these parameters:
-          OPEN_PATH_LENGTH (metres), DEAD_END_LENGTH (metres), OCCUPANT_LOAD,
+          OPEN_PATH_LENGTH (metres), OCCUPANT_LOAD,
           EXIT_COUNT, EXIT_WIDTH (millimetres).
         Use ONLY these comparators: LTE, GTE, EQ.
         If a provision does not map cleanly to one parameter, omit it.
