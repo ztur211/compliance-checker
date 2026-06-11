@@ -44,4 +44,10 @@ public final class JtsAdapter {
             return false; // degenerate ring
         }
     }
+
+    /** Polygon centroid (metres). */
+    public static Point centroid(Space space) {
+        Coordinate c = toPolygon(space).getCentroid().getCoordinate();
+        return new Point(c.x, c.y);
+    }
 }
