@@ -16,3 +16,11 @@ spring:
     locations: classpath:db/migration
 server:
   port: 8080
+org:
+  jobrunr:
+    background-job-server:
+      enabled: true
+    dashboard:
+      enabled: true
+    database:
+      type: sql

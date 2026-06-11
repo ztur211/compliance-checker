@@ -35,5 +35,10 @@ public abstract class PostgresIntegrationTest {
         registry.add("spring.datasource.url", POSTGRES::getJdbcUrl);
         registry.add("spring.datasource.username", POSTGRES::getUsername);
         registry.add("spring.datasource.password", POSTGRES::getPassword);
+        // Tests run the check job inline and share a single JVM across IT classes;
+        // keep JobRunr's background worker and (port-8080/8000) dashboard out of the
+        // way so cached Spring contexts don't collide on the dashboard port.
+        registry.add("org.jobrunr.background-job-server.enabled", () -> "false");
+        registry.add("org.jobrunr.dashboard.enabled", () -> "false");
     }
 }
