@@ -2,18 +2,26 @@ import { useEffect, useState } from 'react'
 import { createProject } from './api/projects'
 import { createFloorPlan } from './api/floorplans'
 import EditorPage from './editor/EditorPage'
+import ReviewPage from './rules/ReviewPage'
 
 export default function App() {
   const [floorPlanId, setFloorPlanId] = useState<string | null>(null)
+  const [tab, setTab] = useState<'editor' | 'review'>('editor')
 
   useEffect(() => {
-    // Bootstrap a project + floor plan for the demo. (Project/plan pickers come later.)
     createProject('Demo project')
       .then((p) => createFloorPlan(p.id, 'Level 1'))
       .then((fp) => setFloorPlanId(fp.id))
       .catch((e) => console.error(e))
   }, [])
 
-  if (!floorPlanId) return <p>Starting…</p>
-  return <EditorPage floorPlanId={floorPlanId} />
+  return (
+    <>
+      <nav style={{ display: 'flex', gap: 8, padding: 8 }}>
+        <button aria-pressed={tab === 'editor'} onClick={() => setTab('editor')}>Editor</button>
+        <button aria-pressed={tab === 'review'} onClick={() => setTab('review')}>Rule review</button>
+      </nav>
+      {tab === 'review' ? <ReviewPage /> : floorPlanId ? <EditorPage floorPlanId={floorPlanId} /> : <p>Starting…</p>}
+    </>
+  )
 }
