@@ -16,4 +16,10 @@ class OccupantDensityTest {
     void unknownType_fallsBackToDefault() {
         assertThat(OccupantDensity.squareMetresPerPerson("ZZ")).isEqualTo(10.0);
     }
+
+    @Test
+    void nullType_fallsBackToDefault() {
+        // a Space deserialized without an occupancyType must not crash the facts run
+        assertThat(OccupantDensity.squareMetresPerPerson(null)).isEqualTo(10.0);
+    }
 }

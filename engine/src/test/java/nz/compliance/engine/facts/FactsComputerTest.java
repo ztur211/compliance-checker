@@ -45,4 +45,28 @@ class FactsComputerTest {
         assertThat(facts.exitDoorCount()).isEqualTo(2);
         assertThat(facts.totalExitWidthMillimetres()).isEqualTo(2100.0);
     }
+
+    @Test
+    void marksWellFormedSpaceAsValid() {
+        GeometryDoc doc = new GeometryDoc(1, List.of(square("s1", "WB", 10)), List.of());
+
+        assertThat(FactsComputer.compute(doc).spaces().get(0).valid()).isTrue();
+    }
+
+    @Test
+    void flagsSelfIntersectingSpaceInvalidWithoutFabricatingArea() {
+        // bow-tie: passes Plan 2's structural checks (4 points) but is not a simple polygon.
+        // JTS getArea() would silently report a non-physical figure rather than throw.
+        Space bowtie = new Space("bad", "bad", "WB", List.of(
+                new Point(0, 0), new Point(10, 10), new Point(10, 0), new Point(0, 10)));
+        GeometryDoc doc = new GeometryDoc(1, List.of(bowtie), List.of());
+
+        PlanFacts facts = FactsComputer.compute(doc);
+
+        SpaceFacts sf = facts.spaces().get(0);
+        assertThat(sf.valid()).isFalse();
+        assertThat(sf.areaSquareMetres()).isEqualTo(0.0);
+        assertThat(sf.occupantLoad()).isEqualTo(0.0);
+        assertThat(facts.totalOccupantLoad()).isEqualTo(0.0);
+    }
 }

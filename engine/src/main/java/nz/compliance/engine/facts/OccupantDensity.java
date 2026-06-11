@@ -19,6 +19,9 @@ public final class OccupantDensity {
     }
 
     public static double squareMetresPerPerson(String occupancyType) {
+        if (occupancyType == null) {
+            return DEFAULT_SQM_PER_PERSON; // immutable Map.of rejects null-key lookups
+        }
         return SQM_PER_PERSON.getOrDefault(occupancyType, DEFAULT_SQM_PER_PERSON);
     }
 }

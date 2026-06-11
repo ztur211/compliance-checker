@@ -18,9 +18,15 @@ public final class FactsComputer {
         List<SpaceFacts> spaceFacts = new ArrayList<>();
         double totalOccupants = 0;
         for (Space s : doc.spaces()) {
-            double area = JtsAdapter.areaSquareMetres(s);
-            double occupants = area / OccupantDensity.squareMetresPerPerson(s.occupancyType());
-            spaceFacts.add(new SpaceFacts(s.id(), area, occupants));
+            // Only trust JTS area/occupant load for topologically valid polygons.
+            // A self-intersecting ring's getArea() is silently wrong (e.g. a
+            // figure-eight reports the sum of its lobes), and areaSquareMetres()
+            // throws on a <3-point ring. Flag invalid spaces so the rules layer
+            // can mark them "not evaluated" instead of consuming bogus facts.
+            boolean valid = JtsAdapter.isValid(s);
+            double area = valid ? JtsAdapter.areaSquareMetres(s) : 0.0;
+            double occupants = valid ? area / OccupantDensity.squareMetresPerPerson(s.occupancyType()) : 0.0;
+            spaceFacts.add(new SpaceFacts(s.id(), valid, area, occupants));
             totalOccupants += occupants;
         }
 
