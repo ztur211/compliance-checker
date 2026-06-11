@@ -1,5 +1,18 @@
 spring:
   application:
     name: compliance-checker
+  datasource:
+    url: ${DB_URL:jdbc:postgresql://localhost:5432/compliance}
+    username: ${DB_USER:compliance}
+    password: ${DB_PASSWORD:compliance}
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+    properties:
+      hibernate.format_sql: true
+  flyway:
+    enabled: true
+    locations: classpath:db/migration
 server:
   port: 8080
