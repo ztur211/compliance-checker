@@ -6,6 +6,7 @@ import { useFloorPlan } from './useFloorPlan'
 import EditorCanvas from './EditorCanvas'
 import Toolbar, { type Mode } from './Toolbar'
 import ResultsPanel from './ResultsPanel'
+import { SAMPLES } from './samples'
 
 interface Props { floorPlanId: string }
 
@@ -60,6 +61,19 @@ export default function EditorPage({ floorPlanId }: Props) {
   return (
     <main>
       <h1>compliance-checker — editor</h1>
+      <label>
+        Load sample:{' '}
+        <select
+          defaultValue=""
+          onChange={(e) => {
+            const s = SAMPLES.find((x) => x.name === e.target.value)
+            if (s) fp.setDoc(s.doc)
+          }}
+        >
+          <option value="" disabled>Choose…</option>
+          {SAMPLES.map((s) => <option key={s.name} value={s.name}>{s.name}</option>)}
+        </select>
+      </label>
       <label>Plan name <input value={name} onChange={(e) => setName(e.target.value)} /></label>
       <Toolbar mode={mode} onMode={setMode} onFinishSpace={finishSpace} onSave={save} saving={saving} />
       <button onClick={runCheck} disabled={checking}>{checking ? 'Checking…' : 'Check compliance'}</button>
