@@ -19,6 +19,9 @@ export default function EditorPage({ floorPlanId }: Props) {
   const [checking, setChecking] = useState(false)
   const [result, setResult] = useState<CheckResult | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [riskGroup, setRiskGroup] = useState('WB')
+  const [sprinklered, setSprinklered] = useState(true)
+  const [escapeHeight, setEscapeHeight] = useState(3)
 
   useEffect(() => {
     getFloorPlan(floorPlanId).then((loaded) => { fp.setDoc(loaded.geometry); setName(loaded.name) })
@@ -38,7 +41,9 @@ export default function EditorPage({ floorPlanId }: Props) {
   async function save() {
     setSaving(true)
     try {
-      await saveFloorPlan(floorPlanId, { name, riskGroup: 'WB', sprinklered: true, escapeHeightMetres: 3, geometry: fp.doc })
+      await saveFloorPlan(floorPlanId, {
+        name, riskGroup, sprinklered, escapeHeightMetres: escapeHeight, geometry: fp.doc,
+      })
     } finally { setSaving(false) }
   }
 
@@ -76,12 +81,34 @@ export default function EditorPage({ floorPlanId }: Props) {
       </label>
       <label>Plan name <input value={name} onChange={(e) => setName(e.target.value)} /></label>
       <Toolbar mode={mode} onMode={setMode} onFinishSpace={finishSpace} onSave={save} saving={saving} />
+      <fieldset style={{ marginTop: 8 }}>
+        <legend>Building context</legend>
+        <label>Risk group{' '}
+          <select value={riskGroup} onChange={(e) => setRiskGroup(e.target.value)}>
+            <option value="WB">WB — working/business</option>
+            <option value="CA">CA — crowd activity</option>
+          </select>
+        </label>{' '}
+        <label><input type="checkbox" checked={sprinklered} onChange={(e) => setSprinklered(e.target.checked)} /> Sprinklered</label>{' '}
+        <label>Escape height (m){' '}
+          <input type="number" value={escapeHeight} min={0} step={0.5}
+                 onChange={(e) => setEscapeHeight(Number(e.target.value))} style={{ width: 64 }} />
+        </label>
+      </fieldset>
       <button onClick={runCheck} disabled={checking}>{checking ? 'Checking…' : 'Check compliance'}</button>
       <EditorCanvas doc={fp.doc} draft={draft} onCanvasClick={onCanvasClick}
                     violationSpaceIds={violationSpaceIds} pathNodeIds={pathNodeIds} />
       {error && <p role="alert" style={{ color: '#c5221f' }}>⚠️ {error}</p>}
+      {result && !result.blocked && (
+        <p>
+          {result.violations.length} violation(s) · {result.passed.length} passed · {result.notEvaluated.length} not evaluated
+        </p>
+      )}
       <ResultsPanel result={result} />
       <p>Spaces: {fp.doc.spaces.length} · Doors: {fp.doc.doors.length}</p>
+      <footer style={{ marginTop: 16, fontSize: 12, color: '#777' }}>
+        Design-aid / pre-check against the NZBC C/AS2 Acceptable Solution. Not a legal compliance sign-off.
+      </footer>
     </main>
   )
 }
