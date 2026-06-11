@@ -19,6 +19,13 @@ import java.util.Optional;
 /**
  * Builds the egress graph and computes open-path travel distance to the nearest
  * exit for every space (v1 centroid-based door-graph approximation; see spec §9).
+ *
+ * <p>Topologically-invalid spaces (where {@link JtsAdapter#isValid} is false) are
+ * excluded from the graph: a self-intersecting/degenerate polygon has no trustworthy
+ * centroid, so it gets {@code reachesExit=false} / empty path rather than a fabricated
+ * route, and cannot corrupt other spaces' routes. The rules layer (Plan 5) maps such
+ * spaces to "not evaluated" via {@code SpaceFacts.valid}; a space that is valid but
+ * still cannot reach an exit is the genuine "no means of escape" case.
  */
 public final class EgressAnalyzer {
 
@@ -34,6 +41,9 @@ public final class EgressAnalyzer {
 
         Map<String, Point> centroids = new HashMap<>();
         for (Space s : doc.spaces()) {
+            if (!JtsAdapter.isValid(s)) {
+                continue; // degenerate polygon: no trustworthy centroid (see class doc)
+            }
             graph.addVertex(s.id());
             centroids.put(s.id(), JtsAdapter.centroid(s));
         }
@@ -44,12 +54,18 @@ public final class EgressAnalyzer {
             }
             Point from = centroids.get(d.fromSpaceId());
             if (from == null) {
-                continue;
+                continue; // door on an unknown or invalid (excluded) space
             }
             Point mid = midpoint(d);
-            if (d.exit() && d.toSpaceId() == null) {
+            if (d.exit()) {
+                // Any door marked a final exit discharges to the exterior, regardless
+                // of toSpaceId. This matches FactsComputer's exit predicate (d.exit()
+                // alone), so exit count and the egress graph agree about the same door.
                 addOrMinEdge(graph, d.fromSpaceId(), EXTERIOR, dist(from, mid));
             } else if (d.toSpaceId() != null) {
+                if (d.fromSpaceId().equals(d.toSpaceId())) {
+                    continue; // a door cannot connect a space to itself
+                }
                 Point to = centroids.get(d.toSpaceId());
                 if (to == null) {
                     continue;
@@ -62,6 +78,11 @@ public final class EgressAnalyzer {
         DijkstraShortestPath<String, DefaultWeightedEdge> dijkstra = new DijkstraShortestPath<>(graph);
         Map<String, SpaceEgress> bySpace = new LinkedHashMap<>();
         for (Space s : doc.spaces()) {
+            if (!graph.containsVertex(s.id())) {
+                // excluded as topologically invalid — no trustworthy route
+                bySpace.put(s.id(), new SpaceEgress(s.id(), Optional.empty(), false, List.of()));
+                continue;
+            }
             GraphPath<String, DefaultWeightedEdge> path = dijkstra.getPath(s.id(), EXTERIOR);
             if (path == null) {
                 bySpace.put(s.id(), new SpaceEgress(s.id(), Optional.empty(), false, List.of()));

@@ -63,4 +63,46 @@ class EgressAnalyzerTest {
         assertThat(r.bySpace().get("s3").reachesExit()).isFalse();
         assertThat(r.unreachable()).extracting(SpaceEgress::spaceId).containsExactly("s3");
     }
+
+    @Test
+    void selfReferentialDoor_doesNotCrash() {
+        // a door whose from==to passes the structural 422 gate; it must not throw
+        // "loops not allowed" when the graph is built.
+        GeometryDoc doc = new GeometryDoc(1,
+                List.of(rect("s1", 0, 0, 10, 10)),
+                List.of(
+                        new Door("dself", "s1", "s1", List.of(new Point(5, 0), new Point(6, 0)), 900, false),
+                        new Door("e1", "s1", null, List.of(new Point(0, 4), new Point(0, 6)), 1200, true)));
+        EgressResult r = EgressAnalyzer.analyze(doc);
+        assertThat(r.bySpace().get("s1").reachesExit()).isTrue();
+    }
+
+    @Test
+    void exitDoorWithToSpaceId_stillDischargesToExterior() {
+        // a door ticked exit=true but also carrying a toSpaceId must still reach the
+        // exterior, consistent with FactsComputer counting any exit door.
+        GeometryDoc doc = new GeometryDoc(1,
+                List.of(rect("s1", 0, 0, 10, 10), rect("s2", 10, 0, 20, 10)),
+                List.of(new Door("e1", "s1", "s2", List.of(new Point(0, 4), new Point(0, 6)), 1200, true)));
+        EgressResult r = EgressAnalyzer.analyze(doc);
+        SpaceEgress s1 = r.bySpace().get("s1");
+        assertThat(s1.reachesExit()).isTrue();
+        assertThat(s1.openPathLengthMetres()).get().asInstanceOf(org.assertj.core.api.InstanceOfAssertFactories.DOUBLE)
+                .isCloseTo(5.0, within(1e-9));
+    }
+
+    @Test
+    void degenerateSpace_isExcludedFromGraph_noBogusRoute() {
+        // bow-tie passes the structural 422 gate but is not a simple polygon; its centroid
+        // must not be trusted, so it gets no fabricated route (not a confident PASS).
+        Space bowtie = new Space("bad", "bad", "WB", List.of(
+                new Point(0, 0), new Point(10, 10), new Point(10, 0), new Point(0, 10)));
+        GeometryDoc doc = new GeometryDoc(1, List.of(bowtie),
+                List.of(new Door("e1", "bad", null, List.of(new Point(0, 4), new Point(0, 6)), 1200, true)));
+        EgressResult r = EgressAnalyzer.analyze(doc);
+        SpaceEgress bad = r.bySpace().get("bad");
+        assertThat(bad.reachesExit()).isFalse();
+        assertThat(bad.openPathLengthMetres()).isEmpty();
+        assertThat(bad.pathNodeIds()).isEmpty();
+    }
 }
