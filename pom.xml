@@ -40,6 +40,15 @@
           <groupId>org.apache.maven.plugins</groupId>
           <artifactId>maven-compiler-plugin</artifactId>
           <version>3.13.0</version>
+          <configuration>
+            <!--
+              Retain method parameter names in bytecode. spring-boot-starter-parent
+              enables this by default, but this build uses the spring-boot BOM, so
+              Spring MVC cannot resolve unnamed @PathVariable/@RequestParam names
+              without it (e.g. @PathVariable UUID id -> IllegalArgumentException).
+            -->
+            <parameters>true</parameters>
+          </configuration>
         </plugin>
         <plugin>
           <groupId>org.apache.maven.plugins</groupId>
