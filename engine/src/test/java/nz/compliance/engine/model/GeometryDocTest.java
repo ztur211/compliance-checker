@@ -44,6 +44,15 @@ class GeometryDocTest {
     }
 
     @Test
+    void validate_rejectsReservedExteriorSpaceId() {
+        var doc = new GeometryDoc(1,
+                List.of(new Space("EXTERIOR", "x", "WB",
+                        List.of(new Point(0, 0), new Point(10, 0), new Point(10, 10), new Point(0, 10)))),
+                List.of());
+        assertThat(doc.validationErrors()).anyMatch(e -> e.contains("reserved"));
+    }
+
+    @Test
     void constructor_isNullSafeForLists() {
         var doc = new GeometryDoc(1, null, null);
         assertThat(doc.spaces()).isEmpty();

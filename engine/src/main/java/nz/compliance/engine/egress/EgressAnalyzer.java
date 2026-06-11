@@ -29,7 +29,7 @@ import java.util.Optional;
  */
 public final class EgressAnalyzer {
 
-    public static final String EXTERIOR = "EXTERIOR";
+    public static final String EXTERIOR = GeometryDoc.EXTERIOR_ID;
 
     private EgressAnalyzer() {
     }

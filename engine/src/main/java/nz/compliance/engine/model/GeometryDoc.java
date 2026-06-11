@@ -8,6 +8,9 @@ import java.util.Set;
 /** The editable floor-plan geometry document persisted as jsonb. */
 public record GeometryDoc(int schemaVersion, List<Space> spaces, List<Door> doors) {
 
+    /** Reserved node id for the egress graph's exterior/discharge sentinel; not a valid user space id. */
+    public static final String EXTERIOR_ID = "EXTERIOR";
+
     public GeometryDoc {
         spaces = spaces == null ? List.of() : List.copyOf(spaces);
         doors = doors == null ? List.of() : List.copyOf(doors);
@@ -18,6 +21,9 @@ public record GeometryDoc(int schemaVersion, List<Space> spaces, List<Door> door
         List<String> errors = new ArrayList<>();
         Set<String> spaceIds = new HashSet<>();
         for (Space s : spaces) {
+            if (EXTERIOR_ID.equals(s.id())) {
+                errors.add("space id \"" + EXTERIOR_ID + "\" is reserved (egress sentinel)");
+            }
             if (!spaceIds.add(s.id())) {
                 errors.add("duplicate space id: " + s.id());
             }

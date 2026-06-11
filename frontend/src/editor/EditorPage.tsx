@@ -17,6 +17,7 @@ export default function EditorPage({ floorPlanId }: Props) {
   const [saving, setSaving] = useState(false)
   const [checking, setChecking] = useState(false)
   const [result, setResult] = useState<CheckResult | null>(null)
+  const [error, setError] = useState<string | null>(null)
 
   useEffect(() => {
     getFloorPlan(floorPlanId).then((loaded) => { fp.setDoc(loaded.geometry); setName(loaded.name) })
@@ -41,12 +42,15 @@ export default function EditorPage({ floorPlanId }: Props) {
   }
 
   async function runCheck() {
-    setChecking(true); setResult(null)
+    setChecking(true); setResult(null); setError(null)
     try {
       await save()
       const { runId } = await startCheck(floorPlanId)
       const run = await pollCheck(runId)
-      setResult(run.result)
+      if (run.status === 'FAILED') setError(run.error ?? 'Check failed.')
+      else setResult(run.result)
+    } catch (e) {
+      setError(String(e))   // network error or poll timeout
     } finally { setChecking(false) }
   }
 
@@ -61,6 +65,7 @@ export default function EditorPage({ floorPlanId }: Props) {
       <button onClick={runCheck} disabled={checking}>{checking ? 'Checking…' : 'Check compliance'}</button>
       <EditorCanvas doc={fp.doc} draft={draft} onCanvasClick={onCanvasClick}
                     violationSpaceIds={violationSpaceIds} pathNodeIds={pathNodeIds} />
+      {error && <p role="alert" style={{ color: '#c5221f' }}>⚠️ {error}</p>}
       <ResultsPanel result={result} />
       <p>Spaces: {fp.doc.spaces.length} · Doors: {fp.doc.doors.length}</p>
     </main>
