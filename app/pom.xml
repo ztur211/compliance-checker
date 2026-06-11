@@ -79,6 +79,17 @@
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-failsafe-plugin</artifactId>
+        <configuration>
+          <!--
+            Failsafe runs in integration-test (after package), where
+            spring-boot-maven-plugin:repackage has rewritten the app jar into a
+            fat jar with classes under BOOT-INF/classes. Without this, Failsafe
+            puts that fat jar on the test classpath and the app's own main
+            classes (incl. the @SpringBootApplication) are not found. Point it at
+            target/classes instead.
+          -->
+          <classesDirectory>${project.build.outputDirectory}</classesDirectory>
+        </configuration>
         <executions>
           <execution>
             <goals>
