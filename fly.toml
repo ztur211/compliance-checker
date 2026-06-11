@@ -1,4 +1,4 @@
-app = "compliance-checker-CHANGEME"
+app = "compliance-checker-nz"
 primary_region = "syd"
 
 [build]
