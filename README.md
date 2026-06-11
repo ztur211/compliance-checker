@@ -1,36 +1,45 @@
 # compliance-checker
 
-A building-code compliance checker. **v1** checks **New Zealand commercial fire egress**
-(means of escape, per NZBC C/AS2) on a 2D floor plan, using a pure rules engine
-(computational geometry + graph shortest-path) and an LLM pipeline that codifies code
-text into reviewable rules.
+Automated **building-code compliance** checking. **v1** checks **New Zealand commercial fire egress**
+(means of escape, NZBC C/AS2) on a 2D floor plan.
 
-> Design-aid / pre-check only — **not** a legal compliance sign-off.
+> Design-aid / pre-check against the C/AS2 Acceptable Solution — **not** a legal compliance sign-off.
 
-See the design spec in `docs/superpowers/specs/` and plans in `docs/superpowers/plans/`.
+![demo](docs/demo.gif)
 
-## Stack
-Java 21 · Spring Boot · (engine: JTS + JGraphT) · React + TypeScript (Vite) · Docker · Fly.io
+## What it does
+- Draw a floor plan (spaces, doors, exits) in the browser.
+- A pure, deterministic **rules engine** computes occupant load, builds an **egress graph**, and runs
+  **Dijkstra** to find each space's open-path travel distance to the nearest exit.
+- Violations are **located** on the plan (offending space + egress path highlighted) and explained.
+- Compliance rules are **codified from C/AS2 text by an LLM**, then **human-reviewed** before activation;
+  checks run deterministically against the approved, versioned rule set.
 
-## Develop
-Backend (port 8080):
+## Architecture
+Pure `engine` module (JTS + JGraphT, no Spring) ← `app` (Spring Boot, Postgres, JobRunr) ← React/TS frontend.
+LLM (LangChain4j + Claude) runs only at **authoring time**, never in the check path. See `docs/ARCHITECTURE.md`
+and the design spec in `docs/superpowers/specs/`.
 
-    ./mvnw -pl app spring-boot:run
-
-Frontend (port 5173, proxies `/api` to 8080):
-
-    cd frontend && npm install && npm run dev
+## Run locally
+```
+docker compose up -d db
+./mvnw -pl app -am spring-boot:run             # backend :8080
+cd frontend && npm install && npm run dev      # frontend :5173
+```
 
 ## Test
+```
+./mvnw verify                                  # engine + app (Testcontainers)
+cd frontend && npm run test
+```
 
-    ./mvnw verify          # backend (engine + app)
-    cd frontend && npm run test
-
-## Run the production image locally
-
-    docker compose up --build
-    # open http://localhost:8080
+## Rule extraction (optional)
+Set `ANTHROPIC_API_KEY`, then trigger extraction and approve candidates on the **Rule review** tab.
+Without an active rule set, checks fall back to a built-in illustrative rule set.
 
 ## Deploy
+Combined image (`Dockerfile`) to Fly.io with a managed Postgres — see `docs/superpowers/plans/2026-06-09-07-polish-docs-demo.md`.
 
-    fly deploy             # see fly.toml
+## Status / roadmap
+v1 = NZ commercial fire egress. Roadmap: accessibility (NZS 4121), more risk groups, multi-storey,
+IFC import, structural (NZS 3604), other jurisdictions. See the spec.
