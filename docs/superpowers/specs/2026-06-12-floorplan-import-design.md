@@ -20,6 +20,7 @@ This is the **second application** of the project's core pattern: as with rule c
 **Goals**
 - Turn an uploaded PDF/image of a plan into the engine's `GeometryDoc` with far less effort than drawing from scratch.
 - A genuine "wow" first impression: drop a picture, watch it become a recognised plan.
+- **Separation of input from analysis** — users (and Claude) supply *building geometry only* (rooms, doors, and which doors are final exits); the egress route and its compliance are *always computed by the engine* (graph + Dijkstra), never drawn or annotated by the user. Import must never degrade into manual egress-route annotation.
 - Keep the LLM in the **ingestion** path only; the check stays pure and deterministic.
 - Reuse existing patterns: the extractor **interface seam**, the lazily-built Claude client, the `validationErrors()` gate, the `@Tag("eval")` harness, and the editor canvas.
 - **Degrade gracefully** to "trace over a backdrop" when the AI is unavailable or unsure.
@@ -164,14 +165,15 @@ Mirrors the existing strategy; **no live API in CI.**
 
 ## 11. Key design decisions
 
-1. Import is an **additive ingestion layer**; the engine and check are untouched.
-2. **LLM in ingestion, not the check path** — preserves determinism; parallels rule codification.
-3. **Draft-then-confirm** (mandatory human review) — required for a life-safety tool.
-4. **Claude vision over bespoke CV** — reuse the stack, ship fast, avoid a research project.
-5. **Backdrop-assisted correction** — accuracy without trusting imprecise vision coordinates.
-6. **Auto-scale-or-calibrate** — robustness; metres are mandatory, so calibration is the guaranteed floor.
-7. **Reuse the extractor-seam + lazy-client + validation-gate + eval patterns** for consistency with the existing codebase.
-8. **DWG / DXF / IFC deferred** — a different (vector) pipeline; DWG→PDF export bridges the gap now.
+1. **Separation of input from analysis** — users/Claude supply building geometry only (rooms, doors, final-exit flags); the engine *always* computes the egress route + compliance (graph + Dijkstra). The user never draws or annotates the escape route; import must not degrade into manual egress-route annotation.
+2. Import is an **additive ingestion layer**; the engine and check are untouched.
+3. **LLM in ingestion, not the check path** — preserves determinism; parallels rule codification.
+4. **Draft-then-confirm** (mandatory human review) — required for a life-safety tool.
+5. **Claude vision over bespoke CV** — reuse the stack, ship fast, avoid a research project.
+6. **Backdrop-assisted correction** — accuracy without trusting imprecise vision coordinates.
+7. **Auto-scale-or-calibrate** — robustness; metres are mandatory, so calibration is the guaranteed floor.
+8. **Reuse the extractor-seam + lazy-client + validation-gate + eval patterns** for consistency with the existing codebase.
+9. **DWG / DXF / IFC deferred** — a different (vector) pipeline; DWG→PDF export bridges the gap now.
 
 ---
 
