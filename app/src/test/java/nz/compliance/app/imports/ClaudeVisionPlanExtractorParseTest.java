@@ -68,4 +68,31 @@ class ClaudeVisionPlanExtractorParseTest {
         PlanExtraction ex = extractor.parse(fenced);
         assertThat(ex.warnings()).isEmpty();   // parsed cleanly, not degraded to a warning
     }
+
+    @Test
+    void aTruncatedReplySurfacesACutOffWarningInsteadOfSilentlyEmptying() {
+        // finishReason==LENGTH means the model hit maxTokens mid-JSON. The partial text won't
+        // parse, but the user must learn WHY (plan too large), not get a silent empty plan.
+        PlanExtraction ex = extractor.interpret("{\"rooms\":[{\"label\":\"A\",", true);
+        assertThat(ex.rooms()).isEmpty();
+        assertThat(ex.warnings()).anyMatch(w -> w.toLowerCase().contains("cut off"));
+    }
+
+    @Test
+    void aTruncatedReplyKeepsWhateverParsedAndStillFlagsTheCutOff() {
+        // If a complete-enough prefix did parse, keep it — but still warn it may be incomplete.
+        String json = """
+            {"rooms":[{"label":"A","occupancyTypeGuess":"","polygonPx":[{"x":0,"y":0},{"x":1,"y":0},{"x":1,"y":1}],"confidence":0.5}],
+             "doors":[],"scaleGuess":null,"warnings":[]}""";
+        PlanExtraction ex = extractor.interpret(json, true);
+        assertThat(ex.rooms()).hasSize(1);
+        assertThat(ex.warnings()).anyMatch(w -> w.toLowerCase().contains("cut off"));
+    }
+
+    @Test
+    void aCompleteReplyInterpretsExactlyLikeParse() {
+        String json = "{\"rooms\":[],\"doors\":[],\"scaleGuess\":null,\"warnings\":[]}";
+        PlanExtraction ex = extractor.interpret(json, false);
+        assertThat(ex.warnings()).isEmpty();   // no truncation note added on a clean, complete reply
+    }
 }
