@@ -50,7 +50,11 @@ public class ImportDraftAssembler {
             }
             String toId = ed.exitGuess() ? null : resolveTo(ed, labelToId, fromId);
             double width = ed.clearWidthMmGuess() == null ? 0.0 : ed.clearWidthMmGuess();
-            doors.add(new Door("door-" + d++, fromId, toId, ed.positionPx(), width, ed.exitGuess()));
+            String doorId = "door-" + d++;
+            if (!ed.exitGuess() && toId == null) {
+                warnings.add("Door " + doorId + " connects only one room; left as a discharge to outside — verify it on the plan.");
+            }
+            doors.add(new Door(doorId, fromId, toId, ed.positionPx(), width, ed.exitGuess()));
         }
 
         GeometryDoc geo = new GeometryDoc(1, spaces, doors);

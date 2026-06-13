@@ -74,4 +74,34 @@ class ImportDraftAssemblerTest {
         assertThat(draft.draftGeometryPx().doors()).isEmpty();
         assertThat(draft.warnings()).isNotEmpty();
     }
+
+    @Test
+    void dropsADoorWhenThereIsNoRoomToAttachItTo() {
+        PlanExtraction ex = new PlanExtraction(
+                List.of(),   // no rooms at all
+                List.of(new ExtractedDoor(List.of(new Point(10, 10), new Point(10, 30)),
+                        List.of(), false, null, 0.4)),
+                null, List.of());
+
+        ImportDraft draft = assembler.assemble(image, ex);
+
+        assertThat(draft.draftGeometryPx().doors()).isEmpty();
+        assertThat(draft.warnings()).anyMatch(w -> w.toLowerCase().contains("no room"));
+    }
+
+    @Test
+    void warnsWhenANonExitDoorConnectsOnlyOneRoom() {
+        PlanExtraction ex = new PlanExtraction(
+                List.of(room("Office", 0, 0, 100, 100)),
+                List.of(new ExtractedDoor(List.of(new Point(0, 40), new Point(0, 60)),
+                        List.of("Office"), false, null, 0.5)),
+                null, List.of());
+
+        ImportDraft draft = assembler.assemble(image, ex);
+        Door d = draft.draftGeometryPx().doors().get(0);
+
+        assertThat(d.toSpaceId()).isNull();   // no second room -> becomes an exterior edge
+        assertThat(d.exit()).isFalse();
+        assertThat(draft.warnings()).anyMatch(w -> w.contains("door-1") && w.toLowerCase().contains("one room"));
+    }
 }
