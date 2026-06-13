@@ -7,10 +7,13 @@ import dev.langchain4j.data.message.TextContent;
 import dev.langchain4j.data.message.UserMessage;
 import dev.langchain4j.model.anthropic.AnthropicChatModel;
 import dev.langchain4j.model.chat.ChatModel;
+import dev.langchain4j.model.chat.response.ChatResponse;
+import dev.langchain4j.model.output.FinishReason;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
+import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
 
@@ -31,6 +34,11 @@ public class ClaudeVisionPlanExtractor implements VisionPlanExtractor {
         Mark exitGuess=true only if a door clearly discharges outside / to a final exit.
         If you cannot read a scale bar or dimension, set scaleGuess to null. Never invent numbers.""";
 
+    // Generous output cap — a large multi-room plan needs several thousand tokens of JSON.
+    // If the model still hits it, extract() detects the LENGTH finish and surfaces a warning
+    // (see interpret) instead of letting the truncated JSON degrade to a silent empty plan.
+    private static final int MAX_TOKENS = 16_384;
+
     private final String apiKey;
     private final ObjectMapper mapper = new ObjectMapper();
     private volatile ChatModel model;
@@ -46,8 +54,24 @@ public class ClaudeVisionPlanExtractor implements VisionPlanExtractor {
                 ImageContent.from(base64, "image/png"),
                 TextContent.from("Extract the floor plan. Image is "
                         + image.widthPx() + "x" + image.heightPx() + " px."));
-        String json = model().chat(SystemMessage.from(SYSTEM), user).aiMessage().text();
-        return parse(json);
+        ChatResponse response = model().chat(SystemMessage.from(SYSTEM), user);
+        return interpret(response.aiMessage().text(), response.finishReason() == FinishReason.LENGTH);
+    }
+
+    /**
+     * Turn the model's reply into a {@link PlanExtraction}. A {@code truncated} reply — the model hit
+     * its output cap mid-JSON — is surfaced with a clear warning instead of silently degrading to an
+     * empty plan, so the largest, highest-value plans don't import as nothing with no clue why.
+     */
+    PlanExtraction interpret(String text, boolean truncated) {
+        PlanExtraction parsed = parse(text);
+        if (!truncated) {
+            return parsed;
+        }
+        List<String> warnings = new ArrayList<>(parsed.warnings());
+        warnings.add(0, "The plan was too large to extract in one pass — the model's reply was cut off. "
+                + "Split it into floors or wings and import each separately, or trace over the backdrop.");
+        return new PlanExtraction(parsed.rooms(), parsed.doors(), parsed.scaleGuess(), warnings);
     }
 
     /** Parse the model's text into a PlanExtraction; malformed output degrades to a warning-only result. */
@@ -77,7 +101,7 @@ public class ClaudeVisionPlanExtractor implements VisionPlanExtractor {
                 local = model;
                 if (local == null) {
                     model = local = AnthropicChatModel.builder()
-                            .apiKey(apiKey).modelName("claude-sonnet-4-6").maxTokens(4096).build();
+                            .apiKey(apiKey).modelName("claude-sonnet-4-6").maxTokens(MAX_TOKENS).build();
                 }
             }
         }
