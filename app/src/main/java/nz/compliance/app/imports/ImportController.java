@@ -28,9 +28,7 @@ public class ImportController {
         }
         try {
             return imports.importFrom(file.getBytes());
-        } catch (IOException e) {
-            throw new UncheckedIOException(e);
-        } catch (UncheckedIOException e) {
+        } catch (IOException | UncheckedIOException e) {
             throw new ResponseStatusException(HttpStatus.BAD_REQUEST, "could not read the uploaded plan");
         }
     }
