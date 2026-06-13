@@ -7,6 +7,8 @@ import EditorCanvas from './EditorCanvas'
 import Toolbar, { type Mode } from './Toolbar'
 import ResultsPanel from './ResultsPanel'
 import { SAMPLES } from './samples'
+import { uploadImport, type ImportDraft } from '../api/imports'
+import ImportReviewCanvas from './ImportReviewCanvas'
 
 interface Props { floorPlanId: string }
 
@@ -19,6 +21,7 @@ export default function EditorPage({ floorPlanId }: Props) {
   const [checking, setChecking] = useState(false)
   const [result, setResult] = useState<CheckResult | null>(null)
   const [error, setError] = useState<string | null>(null)
+  const [importDraft, setImportDraft] = useState<ImportDraft | null>(null)
   const [riskGroup, setRiskGroup] = useState('WB')
   const [sprinklered, setSprinklered] = useState(true)
   const [escapeHeight, setEscapeHeight] = useState(3)
@@ -60,12 +63,32 @@ export default function EditorPage({ floorPlanId }: Props) {
     } finally { setChecking(false) }
   }
 
+  async function onImportFile(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file) return
+    setError(null)
+    try { setImportDraft(await uploadImport(file)) }
+    catch (err) { setError(String(err)) }
+    finally { e.target.value = '' }   // allow re-selecting the same file
+  }
+
   const violationSpaceIds = (result?.violations ?? []).map((v) => v.spaceId).filter((x): x is string => !!x)
   const pathNodeIds = result?.violations.find((v) => v.pathNodeIds.length > 0)?.pathNodeIds ?? []
 
   return (
     <main>
       <h1>compliance-checker — editor</h1>
+      <label style={{ display: 'block', margin: '8px 0' }}>
+        Import plan (PDF/image):{' '}
+        <input type="file" accept=".pdf,image/*" onChange={onImportFile} />
+      </label>
+      {importDraft && (
+        <ImportReviewCanvas
+          draft={importDraft}
+          onConfirm={(geo) => { fp.setDoc(geo); setImportDraft(null) }}
+          onCancel={() => setImportDraft(null)}
+        />
+      )}
       <label>
         Load sample:{' '}
         <select
