@@ -26,7 +26,9 @@ export default function ImportReviewCanvas({ draft, onConfirm, onCancel }: Props
     setCalPts((p) => (p.length >= 2 ? [{ x, y }] : [...p, { x, y }]))
   }
   function applyCalibration() {
-    if (calPts.length === 2) setMpp(metresPerPixel(calPts[0], calPts[1], knownMetres))
+    if (calPts.length !== 2) return
+    const m = metresPerPixel(calPts[0], calPts[1], knownMetres)
+    if (Number.isFinite(m) && m > 0) setMpp(m)   // reject zero/negative/NaN scale
   }
   function setOccupancy(id: string, occ: string) {
     setGeo((g) => ({ ...g, spaces: g.spaces.map((s) => (s.id === id ? { ...s, occupancyType: occ } : s)) }))
@@ -34,7 +36,7 @@ export default function ImportReviewCanvas({ draft, onConfirm, onCancel }: Props
   function setDoor(id: string, patch: Partial<{ exit: boolean; clearWidthMillimetres: number }>) {
     setGeo((g) => ({ ...g, doors: g.doors.map((d) => (d.id === id ? { ...d, ...patch } : d)) }))
   }
-  function confirm() { if (mpp != null) onConfirm(pxGeometryToMetres(geo, mpp)) }
+  function confirm() { if (mpp != null && mpp > 0) onConfirm(pxGeometryToMetres(geo, mpp)) }
 
   return (
     <section style={{ border: '2px solid #3367d6', padding: 8, marginBottom: 12 }}>
@@ -60,7 +62,7 @@ export default function ImportReviewCanvas({ draft, onConfirm, onCancel }: Props
         <p>{mpp == null ? 'Not set — calibrate before checking.' : `${mpp.toFixed(4)} m / pixel`}</p>
         <p style={{ fontSize: 12 }}>Click two points of a known length on the plan, enter its real length, then Apply.</p>
         <label>Known length (m){' '}
-          <input type="number" value={knownMetres} min={0} step={0.1}
+          <input type="number" value={knownMetres} min={0.1} step={0.1}
                  onChange={(e) => setKnownMetres(Number(e.target.value))} style={{ width: 72 }} />
         </label>{' '}
         <button onClick={applyCalibration} disabled={calPts.length !== 2}>Apply calibration</button>
@@ -96,7 +98,7 @@ export default function ImportReviewCanvas({ draft, onConfirm, onCancel }: Props
         ))}
       </fieldset>
 
-      <button onClick={confirm} disabled={mpp == null}>Confirm &amp; load into editor</button>{' '}
+      <button onClick={confirm} disabled={!(mpp != null && mpp > 0)}>Confirm &amp; load into editor</button>{' '}
       <button onClick={onCancel}>Cancel</button>
     </section>
   )

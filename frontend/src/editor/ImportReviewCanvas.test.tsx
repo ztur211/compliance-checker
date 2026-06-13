@@ -34,4 +34,10 @@ describe('ImportReviewCanvas', () => {
     expect(onConfirm).toHaveBeenCalledTimes(1)
     expect(onConfirm.mock.calls[0][0].spaces[0].polygon[1]).toEqual({ x: 5, y: 0 }) // 100px * 0.05
   })
+
+  it('keeps Confirm disabled when the scale is zero or negative', () => {
+    render(<ImportReviewCanvas draft={makeDraft({ metresPerPixel: 0, source: 'scale-bar', confidence: 0.1 })}
+                               onConfirm={vi.fn()} onCancel={vi.fn()} />)
+    expect(screen.getByRole('button', { name: /confirm/i })).toBeDisabled()
+  })
 })
