@@ -53,4 +53,19 @@ class ClaudeVisionPlanExtractorParseTest {
         assertThat(ex.rooms()).isEmpty();
         assertThat(ex.warnings()).isNotEmpty();
     }
+
+    @Test
+    void stripsASingleLineFence() {
+        String fenced = "```json {\"rooms\":[],\"doors\":[],\"scaleGuess\":null,\"warnings\":[]} ```";
+        PlanExtraction ex = extractor.parse(fenced);
+        assertThat(ex.warnings()).isEmpty();   // parsed cleanly, not degraded to a warning
+        assertThat(ex.rooms()).isEmpty();
+    }
+
+    @Test
+    void stripsAFenceWithNoTrailingNewline() {
+        String fenced = "```json\n{\"rooms\":[],\"doors\":[],\"scaleGuess\":null,\"warnings\":[]}```";
+        PlanExtraction ex = extractor.parse(fenced);
+        assertThat(ex.warnings()).isEmpty();   // parsed cleanly, not degraded to a warning
+    }
 }

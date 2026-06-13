@@ -63,7 +63,9 @@ public class ClaudeVisionPlanExtractor implements VisionPlanExtractor {
     private static String stripFences(String s) {
         String t = s.trim();
         if (t.startsWith("```")) {
-            t = t.replaceFirst("(?s)^```[a-zA-Z]*\\n", "").replaceFirst("(?s)\\n```\\s*$", "");
+            // whitespace (incl. none/space/newline) after the opening fence and before the closing one,
+            // so single-line and no-trailing-newline fenced blocks are stripped too.
+            t = t.replaceFirst("(?s)^```[a-zA-Z]*\\s*", "").replaceFirst("(?s)\\s*```$", "");
         }
         return t;
     }
