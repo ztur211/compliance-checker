@@ -20,17 +20,15 @@ not an assertion.
 | `wealthy-home-sample.jpg` | easy baseline (orthogonal house, no scale bar) | ~7 rooms, scale **null**, windows ≠ doors |
 | `independence-hall-habs.jpg` | a **graphic scale bar** present | scale **derived** (`source:"scale-bar"`, ~0.0162 m/px), not null |
 | `schenley-high-school-1916.png` | **dense** institutional plan (~24 rooms) | coherent at scale; ~2k output tokens — under the cap, but the closest to the truncation regression |
-| `bedroom-hand-drawn.jpg` | **messy** hand-drawn sketch | graceful degradation: low confidence, many warnings, furniture **not** emitted as rooms |
+| `griswold-house-sketch-1862.jpg` | **messy** hand-drawn sketch | graceful degradation: low confidence, many warnings; faint freehand walls + barely-legible labels |
 
 ## Provenance & licences
 
-All from Wikimedia Commons. The two large drawings were downscaled to 2000 px
-max width (re-encoded JPEG); originals are at the source URLs.
+All from Wikimedia Commons and **public domain**. The two large drawings
+(Independence Hall, Griswold) were downscaled to ≤2200 px max width (re-encoded
+JPEG); originals are at the source URLs.
 
 - **wealthy-home-sample.jpg** — [Sample Floorplan](https://commons.wikimedia.org/wiki/File:Sample_Floorplan.jpg) by Boereck. **Public domain.**
 - **independence-hall-habs.jpg** — [HABS measured drawing, first floor of Independence Hall](https://commons.wikimedia.org/wiki/File:HABS_measured_drawing_of_the_first_floor_of_Independence_Hall.jpg), NPS / Historic American Buildings Survey. **Public domain** (US federal work).
 - **schenley-high-school-1916.png** — [Schenley High School, 1916, First Floor Plan](https://commons.wikimedia.org/wiki/File:Schenley_High_School,_1916,_First_Floor_Plan.png), Edward Stotz (1916). **Public domain** (pre-1929 US).
-- **bedroom-hand-drawn.jpg** — [BedroomHandDrawnPlan](https://commons.wikimedia.org/wiki/File:BedroomHandDrawnPlan.jpg) by **CyberThing**. **CC BY-SA 3.0** / GFDL 1.2+.
-  ⚠️ This is the **only non-public-domain** fixture. Share-alike: keeping it
-  requires crediting CyberThing (done here). If you'd rather the fixture set be
-  uniformly PD, swap it for a public-domain hand-drawn/sketch plan.
+- **griswold-house-sketch-1862.jpg** — [J. N. A. Griswold House, first-floor plan sketch](https://commons.wikimedia.org/wiki/File:John_N._A._Griswold_house_(now_Newport_Art_Museum),_Newport,_Rhode_Island._First_floor_plan._Sketch_LCCN2013648686.jpg), Richard Morris Hunt (1862), Library of Congress (LCCN 2013648686). **Public domain** (PD-old-100-expired — published pre-1931, architect d. 1895).
