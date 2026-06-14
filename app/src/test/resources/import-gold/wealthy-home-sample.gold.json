@@ -1,0 +1,21 @@
+{
+  "rooms": [
+    {"label": "Eat-in Kitchen", "polygonPx": [{"x":40,"y":150},{"x":95,"y":118},{"x":150,"y":110},{"x":250,"y":110},{"x":285,"y":150},{"x":285,"y":300},{"x":40,"y":300}]},
+    {"label": "Pantry", "polygonPx": [{"x":40,"y":305},{"x":150,"y":305},{"x":150,"y":365},{"x":40,"y":365}]},
+    {"label": "Laundry / Storage", "polygonPx": [{"x":40,"y":372},{"x":150,"y":372},{"x":150,"y":523},{"x":40,"y":523}]},
+    {"label": "1/2 Bath", "polygonPx": [{"x":157,"y":420},{"x":290,"y":420},{"x":290,"y":523},{"x":157,"y":523}]},
+    {"label": "Entrance", "polygonPx": [{"x":295,"y":367},{"x":455,"y":367},{"x":455,"y":523},{"x":295,"y":523}]},
+    {"label": "Formal Living / Formal Dining", "polygonPx": [{"x":290,"y":150},{"x":540,"y":150},{"x":540,"y":122},{"x":770,"y":122},{"x":770,"y":360},{"x":290,"y":360}]},
+    {"label": "Family", "polygonPx": [{"x":545,"y":370},{"x":770,"y":370},{"x":770,"y":523},{"x":545,"y":523}]}
+  ],
+  "doors": [
+    {"positionPx": [{"x":385,"y":527},{"x":440,"y":527}], "exit": true},
+    {"positionPx": [{"x":305,"y":150},{"x":360,"y":150}], "exit": false},
+    {"positionPx": [{"x":150,"y":325},{"x":150,"y":355}], "exit": false},
+    {"positionPx": [{"x":210,"y":420},{"x":245,"y":420}], "exit": false},
+    {"positionPx": [{"x":150,"y":430},{"x":150,"y":460}], "exit": false},
+    {"positionPx": [{"x":610,"y":367},{"x":660,"y":367}], "exit": false}
+  ],
+  "scaleMetresPerPixel": null,
+  "scoreScale": true
+}
