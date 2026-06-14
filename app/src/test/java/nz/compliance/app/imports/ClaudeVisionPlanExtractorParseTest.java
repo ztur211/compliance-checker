@@ -95,4 +95,16 @@ class ClaudeVisionPlanExtractorParseTest {
         PlanExtraction ex = extractor.interpret(json, false);
         assertThat(ex.warnings()).isEmpty();   // no truncation note added on a clean, complete reply
     }
+
+    @Test
+    void systemPromptForbidsDerivingScaleFromHeightOrComponentCallouts() {
+        // Hardening: a plan scale comes only from a scale bar or a measured plan distance.
+        // Height/component callouts — window sill heights ("BRH"), stair riser/tread, ceiling
+        // heights, door leaf widths — are NOT a plan scale; the prompt must say so to stop
+        // scale-invention on annotated plans (e.g. the Independence Hall "1:64" that was 2x off).
+        String p = ClaudeVisionPlanExtractor.SYSTEM.toLowerCase();
+        assertThat(p).contains("sill");
+        assertThat(p).contains("riser");
+        assertThat(p).contains("scaleguess");
+    }
 }

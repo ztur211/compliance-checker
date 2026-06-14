@@ -22,7 +22,7 @@ import java.util.List;
 @Profile("claude")
 public class ClaudeVisionPlanExtractor implements VisionPlanExtractor {
 
-    private static final String SYSTEM = """
+    static final String SYSTEM = """
         You extract a building floor plan from an image for a fire-egress tool.
         Return ONLY JSON (no prose, no markdown fences) of the form:
         {"rooms":[{"label":string,"occupancyTypeGuess":"WB"|"CA"|"","polygonPx":[{"x":number,"y":number}],"confidence":number}],
@@ -32,7 +32,11 @@ public class ClaudeVisionPlanExtractor implements VisionPlanExtractor {
          "warnings":[string]}
         Coordinates are IMAGE PIXELS, origin top-left. A door's positionPx is its 2-point opening.
         Mark exitGuess=true only if a door clearly discharges outside / to a final exit.
-        If you cannot read a scale bar or dimension, set scaleGuess to null. Never invent numbers.""";
+        Derive scaleGuess ONLY from a graphic scale bar or a dimensioned distance between two
+        points on the plan. Height and component callouts are NOT a plan scale: never compute
+        metresPerPixel from window sill heights (sometimes "BRH"), ceiling heights, stair
+        riser/tread figures (e.g. "17.5/27.7"), or door leaf widths. If no scale bar or plan
+        dimension is legible, set scaleGuess to null. Never invent numbers.""";
 
     // Generous output cap — a large multi-room plan needs several thousand tokens of JSON.
     // If the model still hits it, extract() detects the LENGTH finish and surfaces a warning
