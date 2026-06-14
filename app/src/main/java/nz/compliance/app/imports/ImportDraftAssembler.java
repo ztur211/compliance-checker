@@ -21,6 +21,7 @@ public class ImportDraftAssembler {
         List<Space> spaces = new ArrayList<>();
         Map<String, String> labelToId = new HashMap<>();   // first room with a given label wins
         Map<String, Point> centroidById = new HashMap<>();
+        Map<String, String> nameById = new HashMap<>();
 
         int n = 1;
         for (ExtractedRoom r : ex.rooms()) {
@@ -34,6 +35,7 @@ public class ImportDraftAssembler {
             spaces.add(new Space(id, name, occ, r.polygonPx()));
             labelToId.putIfAbsent(r.label(), id);
             centroidById.put(id, centroid(r.polygonPx()));
+            nameById.put(id, name);
         }
 
         List<Door> doors = new ArrayList<>();
@@ -43,14 +45,23 @@ public class ImportDraftAssembler {
                 warnings.add("Dropped a door without exactly 2 points.");
                 continue;
             }
-            String fromId = resolveFrom(ed, labelToId, centroidById, midpoint(ed.positionPx()));
+            String fromId = resolveByLabel(ed.connectsRoomLabels(), labelToId, null);
+            boolean byProximity = false;
+            if (fromId == null) {
+                fromId = nearest(centroidById, midpoint(ed.positionPx()));
+                byProximity = fromId != null;
+            }
             if (fromId == null) {
                 warnings.add("Dropped a door: no room to attach it to.");
                 continue;
             }
-            String toId = ed.exitGuess() ? null : resolveTo(ed, labelToId, fromId);
-            double width = ed.clearWidthMmGuess() == null ? 0.0 : ed.clearWidthMmGuess();
             String doorId = "door-" + d++;
+            if (byProximity) {
+                warnings.add("Door " + doorId + " had no recognised room label; attached to the nearest room (\""
+                        + nameById.get(fromId) + "\") — verify it on the plan.");
+            }
+            String toId = ed.exitGuess() ? null : resolveByLabel(ed.connectsRoomLabels(), labelToId, fromId);
+            double width = ed.clearWidthMmGuess() == null ? 0.0 : ed.clearWidthMmGuess();
             if (!ed.exitGuess() && toId == null) {
                 warnings.add("Door " + doorId + " connects only one room; left as a discharge to outside — verify it on the plan.");
             }
@@ -62,21 +73,11 @@ public class ImportDraftAssembler {
         return new ImportDraft(backdrop, image.widthPx(), image.heightPx(), geo, ex.scaleGuess(), warnings);
     }
 
-    private static String resolveFrom(ExtractedDoor ed, Map<String, String> labelToId,
-                                      Map<String, Point> centroidById, Point mid) {
-        for (String label : ed.connectsRoomLabels()) {
+    /** First room whose label the model gave for this door, skipping {@code excludeId} (null skips none). */
+    private static String resolveByLabel(List<String> labels, Map<String, String> labelToId, String excludeId) {
+        for (String label : labels) {
             String id = labelToId.get(label);
-            if (id != null) {
-                return id;
-            }
-        }
-        return nearest(centroidById, mid);
-    }
-
-    private static String resolveTo(ExtractedDoor ed, Map<String, String> labelToId, String fromId) {
-        for (String label : ed.connectsRoomLabels()) {
-            String id = labelToId.get(label);
-            if (id != null && !id.equals(fromId)) {
+            if (id != null && !id.equals(excludeId)) {
                 return id;
             }
         }
