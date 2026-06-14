@@ -90,6 +90,24 @@ class ImportDraftAssemblerTest {
     }
 
     @Test
+    void warnsWhenADoorIsAttachedByProximityBecauseNoLabelMatched() {
+        PlanExtraction ex = new PlanExtraction(
+                List.of(room("Office", 0, 0, 100, 100), room("Lobby", 100, 0, 200, 100)),
+                // label matches no room -> silent geometric fallback today; must warn instead.
+                // midpoint x=150 is nearest Lobby's centroid (150,50).
+                List.of(new ExtractedDoor(List.of(new Point(150, 40), new Point(150, 60)),
+                        List.of("Mystery Room"), false, null, 0.5)),
+                null, List.of());
+
+        ImportDraft draft = assembler.assemble(image, ex);
+        Door d = draft.draftGeometryPx().doors().get(0);
+
+        assertThat(d.fromSpaceId()).isEqualTo("room-2");   // still attaches to nearest (Lobby)
+        assertThat(draft.warnings())
+                .anyMatch(w -> w.contains("door-1") && w.toLowerCase().contains("nearest"));
+    }
+
+    @Test
     void warnsWhenANonExitDoorConnectsOnlyOneRoom() {
         PlanExtraction ex = new PlanExtraction(
                 List.of(room("Office", 0, 0, 100, 100)),
