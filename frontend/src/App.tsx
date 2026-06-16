@@ -17,11 +17,15 @@ export default function App() {
 
   return (
     <>
-      <nav style={{ display: 'flex', gap: 8, padding: 8 }}>
+      <header className="app-header">
+        <h1>NZ Fire Egress Compliance Checker</h1>
+        <span className="tag">NZBC C/AS2 means of escape · design-aid pre-check</span>
+      </header>
+      <nav className="tabs">
         <button aria-pressed={tab === 'editor'} onClick={() => setTab('editor')}>Editor</button>
         <button aria-pressed={tab === 'review'} onClick={() => setTab('review')}>Rule review</button>
       </nav>
-      {tab === 'review' ? <ReviewPage /> : floorPlanId ? <EditorPage floorPlanId={floorPlanId} /> : <p>Starting…</p>}
+      {tab === 'review' ? <ReviewPage /> : floorPlanId ? <EditorPage floorPlanId={floorPlanId} /> : <p style={{ padding: '0 20px' }}>Starting…</p>}
     </>
   )
 }
