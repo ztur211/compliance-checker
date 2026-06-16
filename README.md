@@ -5,6 +5,8 @@ Automated **building-code compliance** checking. **v1** checks **New Zealand com
 
 > Design-aid / pre-check against the C/AS2 Acceptable Solution — **not** a legal compliance sign-off.
 
+![Demo: AI import → compliance check → rule review](docs/demo.gif)
+
 ## What it does
 - Draw a floor plan (spaces, doors, exits) in the browser.
 - A pure, deterministic **rules engine** computes occupant load, builds an **egress graph**, and runs
