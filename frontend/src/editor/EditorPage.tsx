@@ -77,7 +77,6 @@ export default function EditorPage({ floorPlanId }: Props) {
 
   return (
     <main>
-      <h1>compliance-checker — editor</h1>
       <label style={{ display: 'block', margin: '8px 0' }}>
         Import plan (PDF/image):{' '}
         <input type="file" accept=".pdf,image/*" onChange={onImportFile} />
