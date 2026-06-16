@@ -7,4 +7,6 @@ import java.util.UUID;
 
 public interface RuleSetRepository extends JpaRepository<RuleSetEntity, UUID> {
     Optional<RuleSetEntity> findFirstByActiveTrueOrderByCreatedAtDesc();
+
+    boolean existsByNameAndVersion(String name, String version);
 }

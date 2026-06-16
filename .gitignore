@@ -17,3 +17,8 @@ frontend/dist/
 
 # OS
 .DS_Store
+
+# demo recording artifacts (docs/demo.gif is committed)
+frontend/demo-artifacts/
+frontend/test-results/
+frontend/portfolio.mp4

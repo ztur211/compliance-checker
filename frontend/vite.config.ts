@@ -16,6 +16,7 @@ const config: UserConfig & { test: unknown } = {
     environment: 'jsdom',
     globals: true,
     setupFiles: './src/setupTests.ts',
+    include: ['src/**/*.{test,spec}.{ts,tsx}'],   // keep Playwright e2e/*.spec.ts out of Vitest
   },
 }
 

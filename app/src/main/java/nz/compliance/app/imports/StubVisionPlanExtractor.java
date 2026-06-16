@@ -12,7 +12,7 @@ import java.util.List;
  * correct — the graceful-degradation floor when no vision model is configured.
  */
 @Component
-@Profile("!claude")
+@Profile("!claude & !demo")
 public class StubVisionPlanExtractor implements VisionPlanExtractor {
 
     @Override

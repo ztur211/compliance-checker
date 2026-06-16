@@ -1,0 +1,32 @@
+[
+  {
+    "citation": "C/AS2 3.3.2",
+    "title": "Maximum open path length",
+    "parameter": "OPEN_PATH_LENGTH",
+    "comparator": "LTE",
+    "threshold": 18.0,
+    "riskGroups": ["WB"],
+    "sourceQuote": "The maximum length of an open path shall not exceed 18 m.",
+    "confidence": 0.93
+  },
+  {
+    "citation": "C/AS2 3.4.1",
+    "title": "Minimum number of escape routes",
+    "parameter": "EXIT_COUNT",
+    "comparator": "GTE",
+    "threshold": 2.0,
+    "riskGroups": ["WB", "CA"],
+    "sourceQuote": "Every firecell shall be provided with not less than two escape routes where the occupant load exceeds 50.",
+    "confidence": 0.90
+  },
+  {
+    "citation": "C/AS2 3.15.1",
+    "title": "Minimum clear width of an escape route",
+    "parameter": "EXIT_WIDTH",
+    "comparator": "GTE",
+    "threshold": 850.0,
+    "riskGroups": ["WB", "CA"],
+    "sourceQuote": "The minimum clear width of any escape route shall be 850 mm.",
+    "confidence": 0.88
+  }
+]
