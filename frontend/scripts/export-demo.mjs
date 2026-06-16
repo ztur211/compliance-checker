@@ -11,7 +11,9 @@ const docs = join(frontend, '..', 'docs')
 
 function newestWebm(dir) {
   let best = null
-  for (const name of readdirSync(dir)) {
+  let entries
+  try { entries = readdirSync(dir) } catch { return null }   // absent demo-artifacts/ -> friendly error below
+  for (const name of entries) {
     const p = join(dir, name)
     const s = statSync(p)
     if (s.isDirectory()) { const c = newestWebm(p); if (c && (!best || c.mtime > best.mtime)) best = c }
@@ -31,6 +33,7 @@ const ff = (args) => execFileSync('ffmpeg', ['-y', ...args], { stdio: 'inherit' 
 console.log('Source:', src.path)
 ff(['-i', src.path, '-c:v', 'libx264', '-pix_fmt', 'yuv420p', '-crf', '20', '-movflags', '+faststart', mp4])
 ff(['-i', src.path, '-vf', 'fps=12,scale=900:-1:flags=lanczos,palettegen', palette])
-ff(['-i', src.path, '-i', palette, '-lavfi', 'fps=12,scale=900:-1:flags=lanczos,paletteuse', gif])
+ff(['-i', src.path, '-i', palette, '-filter_complex',
+    '[0:v]fps=12,scale=900:-1:flags=lanczos[x];[x][1:v]paletteuse', gif])
 console.log('\nWrote:\n  ' + mp4 + '  (portfolio)\n  ' + gif + '  (README)')
 console.log('If demo.gif > 5 MB, lower fps (e.g. fps=10) or scale (e.g. scale=720) and re-run.')
