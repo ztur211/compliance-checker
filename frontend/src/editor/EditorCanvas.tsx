@@ -27,11 +27,14 @@ export default function EditorCanvas({
   return (
     <svg width={800} height={600} role="img" aria-label="floor plan canvas"
          style={{ border: '1px solid #ccc', background: '#fafafa' }} onClick={handleClick}>
-      {doc.spaces.map((s) => (
-        <polygon key={s.id} points={poly(s.polygon)}
-                 fill={violationSpaceIds.includes(s.id) ? '#fce8e6' : '#e8f0fe'}
-                 stroke={violationSpaceIds.includes(s.id) ? '#c5221f' : '#3367d6'} />
-      ))}
+      {doc.spaces.map((s) => {
+        const bad = violationSpaceIds.includes(s.id)
+        return (
+          <polygon key={s.id} points={poly(s.polygon)}
+                   fill={bad ? '#fbd5d0' : '#e8f0fe'}
+                   stroke={bad ? '#c5221f' : '#3367d6'} strokeWidth={bad ? 3 : 1.5} />
+        )
+      })}
       {doc.doors.map((d) => (
         <line key={d.id}
               x1={d.position[0].x * SCALE} y1={d.position[0].y * SCALE}
@@ -39,7 +42,7 @@ export default function EditorCanvas({
               stroke={d.exit ? '#0b8043' : '#999'} strokeWidth={4} />
       ))}
       {pathNodeIds.filter((id) => byId[id]).length > 1 && (
-        <polyline fill="none" stroke="#c5221f" strokeWidth={2} strokeDasharray="6"
+        <polyline fill="none" stroke="#c5221f" strokeWidth={3} strokeDasharray="7 5"
                   points={poly(pathNodeIds.filter((id) => byId[id]).map((id) => centroid(byId[id].polygon)))} />
       )}
       {draft.length > 0 && (

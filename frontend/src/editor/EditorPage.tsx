@@ -119,6 +119,10 @@ export default function EditorPage({ floorPlanId }: Props) {
         </label>
       </fieldset>
       <button onClick={runCheck} disabled={checking}>{checking ? 'Checking…' : 'Check compliance'}</button>
+      <div className="legend">
+        <span className="vio">offending space (violation)</span>
+        <span className="path">computed egress path</span>
+      </div>
       <EditorCanvas doc={fp.doc} draft={draft} onCanvasClick={onCanvasClick}
                     violationSpaceIds={violationSpaceIds} pathNodeIds={pathNodeIds} />
       {error && <p role="alert" style={{ color: '#c5221f' }}>⚠️ {error}</p>}
