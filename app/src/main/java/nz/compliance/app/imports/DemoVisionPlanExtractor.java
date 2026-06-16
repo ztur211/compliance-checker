@@ -19,7 +19,11 @@ import java.util.List;
 @Profile("demo")
 public class DemoVisionPlanExtractor implements VisionPlanExtractor {
 
+    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(DemoVisionPlanExtractor.class);
+
     static final String FIXTURE = "demo/extraction.json";
+    /** Demo-only: the canned fallback plan assumes the uploaded image spans roughly this many metres across. */
+    static final double ASSUMED_PLAN_WIDTH_METRES = 55.0;
     private final ObjectMapper mapper = new ObjectMapper();
 
     @Override
@@ -37,6 +41,7 @@ public class DemoVisionPlanExtractor implements VisionPlanExtractor {
         try (InputStream in = res.getInputStream()) {
             return mapper.readValue(in, PlanExtraction.class);
         } catch (Exception e) {
+            log.warn("demo/extraction.json is present but unreadable; using the fallback plan: {}", e.getMessage());
             return null;   // fall back rather than break the demo
         }
     }
@@ -51,7 +56,7 @@ public class DemoVisionPlanExtractor implements VisionPlanExtractor {
     PlanExtraction fallback(RenderedImage image) {
         double w = image.widthPx();
         double h = image.heightPx();
-        double mpp = 55.0 / w;                 // pixels -> metres (image width ~= 55 m)
+        double mpp = ASSUMED_PLAN_WIDTH_METRES / w;
         double y0 = h * 0.30, y1 = h * 0.70, ymid = h * 0.5;
 
         ExtractedRoom lobby = new ExtractedRoom("Lobby", "WB", List.of(

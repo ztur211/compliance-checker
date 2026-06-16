@@ -27,6 +27,7 @@ class CaptureDemoFixturesTest {
 
     private static final ObjectMapper MAPPER = new ObjectMapper();
     private static final Path DEMO_DIR = Path.of("src/main/resources/demo");
+    // Paths are relative to the app/ module dir, where Maven surefire runs (same convention as VisionPlanExtractorEvalTest).
     private static final String DEMO_IMAGE = "src/test/resources/import-gold/wealthy-home-sample.jpg";
 
     // Representative C/AS2 clause texts. Replace with exact wording you are licensed to use.

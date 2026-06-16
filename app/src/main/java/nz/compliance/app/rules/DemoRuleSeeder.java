@@ -21,6 +21,8 @@ import java.util.List;
 @Profile("demo")
 public class DemoRuleSeeder implements ApplicationRunner {
 
+    private static final org.slf4j.Logger log = org.slf4j.LoggerFactory.getLogger(DemoRuleSeeder.class);
+
     static final String DEMO_SET_NAME = "NZBC C/AS2 — Means of Escape (AI-codified, demo)";
     static final String DEMO_SET_VERSION = "demo-1";
     static final String FIXTURE = "demo/rules.json";
@@ -36,9 +38,7 @@ public class DemoRuleSeeder implements ApplicationRunner {
 
     @Override
     public void run(ApplicationArguments args) {
-        boolean exists = ruleSets.findAll().stream().anyMatch(
-                rs -> DEMO_SET_NAME.equals(rs.getName()) && DEMO_SET_VERSION.equals(rs.getVersion()));
-        if (exists) {
+        if (ruleSets.existsByNameAndVersion(DEMO_SET_NAME, DEMO_SET_VERSION)) {
             return;
         }
         List<RuleCandidate> candidates = loadCandidates();
@@ -60,6 +60,7 @@ public class DemoRuleSeeder implements ApplicationRunner {
         try (InputStream in = res.getInputStream()) {
             return mapper.readValue(in, new TypeReference<List<RuleCandidate>>() {});
         } catch (Exception e) {
+            log.warn("demo/rules.json is present but unreadable; seeding no demo rules: {}", e.getMessage());
             return List.of();
         }
     }
