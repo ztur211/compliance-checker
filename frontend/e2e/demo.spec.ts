@@ -13,6 +13,7 @@ test('compliance-checker full tour', async ({ page }) => {
   await caption(page, '1 · Upload a floor plan — AI extracts spaces, doors & exits')
   await glideTo(page, page.locator('input[type="file"]'))
   await page.setInputFiles('input[type="file"]', 'e2e/assets/plan.jpg')
+  await expect(page.getByRole('heading', { name: 'Review imported plan' })).toBeVisible({ timeout: 20_000 })
   const confirm = page.getByRole('button', { name: 'Confirm & load into editor' })
   await expect(confirm).toBeEnabled({ timeout: 20_000 })   // scaleGuess pre-fills -> enabled
   await page.waitForTimeout(1400)                          // let the reviewer see the extracted plan
