@@ -6,6 +6,14 @@ target/
 node_modules/
 frontend/dist/
 
+# Python / ml
+ml/.venv/
+ml/**/__pycache__/
+ml/.pytest_cache/
+ml/.ruff_cache/
+# Trained model artifacts are build outputs, not source. Retrain from data/rooms.jsonl.
+ml/artifacts/
+
 # Env / secrets
 .env
 .env.local
