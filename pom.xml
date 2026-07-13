@@ -14,6 +14,7 @@
     <maven.compiler.release>21</maven.compiler.release>
     <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
     <spring-boot.version>3.3.5</spring-boot.version>
+    <testcontainers.version>1.21.3</testcontainers.version>
   </properties>
 
   <modules>
@@ -23,6 +24,19 @@
 
   <dependencyManagement>
     <dependencies>
+      <!--
+        Imported ahead of spring-boot-dependencies so it wins: the Boot BOM pins an older
+        Testcontainers whose docker-java negotiates Docker API v1.32, which Docker Engine 29+
+        rejects with a 400. An imported BOM's properties cannot be overridden from here, so the
+        version has to be forced by import order rather than by <testcontainers.version>.
+      -->
+      <dependency>
+        <groupId>org.testcontainers</groupId>
+        <artifactId>testcontainers-bom</artifactId>
+        <version>${testcontainers.version}</version>
+        <type>pom</type>
+        <scope>import</scope>
+      </dependency>
       <dependency>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-dependencies</artifactId>
@@ -67,5 +81,20 @@
         </plugin>
       </plugins>
     </pluginManagement>
+
+    <plugins>
+      <plugin>
+        <groupId>org.springframework.boot</groupId>
+        <artifactId>spring-boot-maven-plugin</artifactId>
+        <!--
+          `./mvnw -pl app -am spring-boot:run` invokes the run goal on every reactor
+          project, including this aggregator, which has no main class and so fails the
+          build before app ever starts. Skip here; app re-enables it (skip=false).
+        -->
+        <configuration>
+          <skip>true</skip>
+        </configuration>
+      </plugin>
+    </plugins>
   </build>
 </project>

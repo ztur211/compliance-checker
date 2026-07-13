@@ -95,6 +95,10 @@
       <plugin>
         <groupId>org.springframework.boot</groupId>
         <artifactId>spring-boot-maven-plugin</artifactId>
+        <!-- Undo the parent's skip=true, which exists only to keep the aggregator out of spring-boot:run. -->
+        <configuration>
+          <skip>false</skip>
+        </configuration>
         <executions>
           <execution>
             <goals>
@@ -116,6 +120,14 @@
             target/classes instead.
           -->
           <classesDirectory>${project.build.outputDirectory}</classesDirectory>
+          <systemPropertyVariables>
+            <!--
+              docker-java still defaults to Docker API v1.32, which Docker Engine 29+
+              rejects with a 400, so Testcontainers reports "no valid Docker environment"
+              even though the daemon is up. Pin a version the modern engine accepts.
+            -->
+            <api.version>1.44</api.version>
+          </systemPropertyVariables>
         </configuration>
         <executions>
           <execution>
