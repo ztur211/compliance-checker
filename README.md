@@ -19,6 +19,7 @@ LLM (LangChain4j + Claude) runs only at **authoring time**, never in the check p
 and the design spec in `docs/superpowers/specs/`.
 
 ## Run locally
+Requires JDK 21, Node 20+, and a running Docker daemon.
 ```
 docker compose up -d db
 ./mvnw -pl app -am spring-boot:run             # backend :8080
