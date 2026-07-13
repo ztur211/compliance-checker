@@ -40,6 +40,19 @@ A gold file sits next to its image (`wealthy-home-sample.jpg` →
 are **pixels of the committed fixture** — mind the downscaling above (Independence
 Hall's scale is ~0.027 m/px at 2000 px wide, not the 0.0162 of the full-res original).
 
+### Authoring one
+
+Use the **Gold authoring** tab in the frontend (`cd frontend && npm run dev`): load the
+image, trace rooms and doors, calibrate the scale, download the `*.gold.json`, and drop it
+next to the image here. It zooms (wheel) and pans (shift-drag), which you will want on a
+dense plan, and it emits coordinates in the image's natural pixels.
+
+**Trace it yourself; do not have a model produce it.** A gold file exists to measure how well
+the vision model reads a plan. If the same model also authors the ground truth, `ExtractionScorer`
+stops measuring accuracy and starts measuring self-agreement, and a room the model reliably
+hallucinates would score 100%. That is also why the tool deliberately has no autocomplete: the
+judgment about what is in the drawing has to come from a human looking at the drawing.
+
 ```json
 {
   "rooms": [ {"label": "Kitchen", "polygonPx": [{"x":40,"y":150}]} ],

@@ -32,7 +32,6 @@ export const getCheck = (runId: string) => api.jsonFetch<CheckRun>(`/api/checks/
 
 export async function pollCheck(runId: string, intervalMs = 600, timeoutMs = 30000): Promise<CheckRun> {
   const start = Date.now()
-  // eslint-disable-next-line no-constant-condition
   while (true) {
     const run = await getCheck(runId)
     if (run.status === 'SUCCEEDED' || run.status === 'FAILED') return run
